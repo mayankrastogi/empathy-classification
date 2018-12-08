@@ -173,7 +173,6 @@ class EmpathyClassification:
             'bestOverallModel': self.bestOverallModel,
             'gridSearches': self.gridSearches
         }
-        # with open(self.outputFile, mode='wb') as file:
         joblib.dump(saveData, self.outputFile)
 
         print("Best performing model saved at:", self.outputFile)
@@ -182,7 +181,6 @@ class EmpathyClassification:
         if modelFile is None:
             modelFile = self.outputFile
 
-        # with open(modelFile, mode='rb') as file:
         data = joblib.load(modelFile)
         self.preprocessor = data["preprocessor"]
         self.bestOverallModel = data['bestOverallModel']
@@ -237,7 +235,11 @@ def main(mode='test', dataFile='testSet.csv', modelFile='bestModel.pkl'):
         # Apply preprocess steps
         Xtest = classification.applyPreprocessing(Xtest)
 
-        # Score model on test data
+        # Score baseline model
+        accuracy = classification.gridSearches[0].best_estimator_.score(Xtest, Ytest)
+        print("Accuracy of most-frequent (baseline) classifier on test set:", accuracy)
+
+        # Score best model on test data
         accuracy = classification.bestOverallModel.score(Xtest, Ytest)
         print("Accuracy of best performing classifier on test set:", accuracy)
 
