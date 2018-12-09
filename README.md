@@ -32,10 +32,10 @@ Please make sure that you have the below packages installed on your system. High
 2. Browse to the project directory
 3. To run the project in `train` mode, issue the following command:
 
-   `python main.py --mode=train --dataset=data/responses.csv --model=bestModel.pkl` 
+   `python main.py --mode=train --dataset=data/responses.csv --model=data/bestModel.pkl` 
 4. To run the project in `test` mode, issue the following command:
 
-   `python main.py --mode=test --dataset=data/testSet.csv --model=bestModel.pkl`
+   `python main.py --mode=test --dataset=data/testSet.csv --model=data/bestModel.pkl`
 
 #### Method 2: From Jupyter Notebook
 
