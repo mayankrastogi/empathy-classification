@@ -220,7 +220,11 @@ def main(mode='test', dataFile='testSet.csv', modelFile='bestModel.pkl'):
         bestModel = classification.findBestPerformingModel()
         classification.saveModel()
 
-        # Test on trained model
+        # Test baseline model on test set
+        accuracy = classification.gridSearches[0].best_estimator_.score(Xtest, Ytest)
+        print("\nAccuracy of most-frequent (baseline) classifier on test set:", accuracy)
+
+        # Test best model on test set
         accuracy = bestModel.score(Xtest, Ytest)
         print("Accuracy of best performing classifier on test set:", accuracy)
 
@@ -237,7 +241,7 @@ def main(mode='test', dataFile='testSet.csv', modelFile='bestModel.pkl'):
 
         # Score baseline model
         accuracy = classification.gridSearches[0].best_estimator_.score(Xtest, Ytest)
-        print("Accuracy of most-frequent (baseline) classifier on test set:", accuracy)
+        print("\nAccuracy of most-frequent (baseline) classifier on test set:", accuracy)
 
         # Score best model on test data
         accuracy = classification.bestOverallModel.score(Xtest, Ytest)
