@@ -90,11 +90,11 @@ class EmpathyClassification:
                 }
             ])
         ]
-
         self.gridSearches = []
         self.results = None
         self.bestModels = {}
         self.bestOverallModel = None
+        self.scoreResults = None
 
     def loadData(self, filename=None):
         csv = pandas.read_csv(self.dataFile if filename is None else filename)
@@ -142,7 +142,8 @@ class EmpathyClassification:
             print("\n\nTraining {} ...".format(name))
             gridSearch = GridSearchCV(classifier, param_grid=params,
                                       cv=StratifiedKFold(n_splits=8, random_state=self.seed),
-                                      scoring='accuracy', n_jobs=-1)
+                                      scoring='accuracy', n_jobs=-1,
+                                      iid=True)
             gridSearch.fit(Xtrain, Ytrain)
 
             self.gridSearches.append(gridSearch)
@@ -161,6 +162,22 @@ class EmpathyClassification:
         print("Best performing model:", bestPerformingModelName)
         self.bestOverallModel = self.bestModels[bestPerformingModelName]
         return self.bestOverallModel
+
+    def scoreClassifiers(self, Xtest, Ytest):
+        results = {"Classifier": [], "CV Accuracy": [], "Test Accuracy": []}
+        for index, gridSearch in enumerate(self.gridSearches):
+            name, _, _ = self.classifiers[index]
+            print("\n\nScoring {} ...".format(name))
+            accuracy = gridSearch.best_estimator_.score(Xtest, Ytest)
+
+            results["Classifier"].append(name)
+            results["CV Accuracy"].append(gridSearch.best_score_)
+            results["Test Accuracy"].append(accuracy)
+
+            print("CV Accuracy was", gridSearch.best_score_)
+            print("Test Accuracy is", accuracy)
+
+        self.scoreResults = pandas.DataFrame(results)
 
     def writeTestSet(self, Xtest, Ytest):
         df = Xtest.copy()
@@ -220,6 +237,11 @@ def main(mode='test', dataFile='testSet.csv', modelFile='bestModel.pkl'):
         bestModel = classification.findBestPerformingModel()
         classification.saveModel()
 
+        # Score models on test set
+        classification.scoreClassifiers(Xtest, Ytest)
+        print("\nSummary of scores on test set:")
+        display(classification.scoreResults)
+
         # Test baseline model on test set
         accuracy = classification.gridSearches[0].best_estimator_.score(Xtest, Ytest)
         print("\nAccuracy of most-frequent (baseline) classifier on test set:", accuracy)
@@ -238,6 +260,11 @@ def main(mode='test', dataFile='testSet.csv', modelFile='bestModel.pkl'):
 
         # Apply preprocess steps
         Xtest = classification.applyPreprocessing(Xtest)
+
+        # Score models on test set
+        classification.scoreClassifiers(Xtest, Ytest)
+        print("\nSummary of scores on test set:")
+        display(classification.scoreResults)
 
         # Score baseline model
         accuracy = classification.gridSearches[0].best_estimator_.score(Xtest, Ytest)
